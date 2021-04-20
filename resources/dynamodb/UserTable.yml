@@ -1,0 +1,27 @@
+Resources:
+  UserDynamoDBTable:
+    Type: 'AWS::DynamoDB::Table'
+    DeletionPolicy: Delete
+    Properties:
+      TableName: '${self:service}-${self:provider.stage}-User'
+      ProvisionedThroughput:
+        ReadCapacityUnits: 5
+        WriteCapacityUnits: 5
+      AttributeDefinitions:
+        - AttributeName: id
+          AttributeType: S
+        - AttributeName: emailId
+          AttributeType: S
+      KeySchema:
+        - AttributeName: id
+          KeyType: HASH
+      GlobalSecondaryIndexes:
+        - IndexName: emailIdGlobalIndex
+          KeySchema:
+            - AttributeName: emailId
+              KeyType: HASH
+          Projection:
+            ProjectionType: ALL
+          ProvisionedThroughput:
+            ReadCapacityUnits: 5
+            WriteCapacityUnits: 5

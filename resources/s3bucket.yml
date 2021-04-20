@@ -1,0 +1,6 @@
+Resources:
+  NewResource:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: ${self:provider.environment.BUCKET_NAME}
+      AccessControl: PublicRead

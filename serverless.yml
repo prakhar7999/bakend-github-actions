@@ -1,0 +1,97 @@
+# Welcome to Serverless!
+#
+# This file is the main config file for your service.
+# It's very minimal at this point and uses default values.
+# You can always add more config options for more control.
+# We've included some commented out config examples here.
+# Just uncomment any of them to get that config option.
+#
+# For full config options, check the docs:
+#    docs.serverless.com
+#
+# Happy Coding!
+
+service: artblocks-backend
+# app and org for use with dashboard.serverless.com
+app: artblocks-backend
+org: abhishekprmr03
+
+# You can pin your service to only deploy with a specific Serverless version
+# Check out our docs for more details
+frameworkVersion: "2"
+
+provider:
+  name: aws
+  runtime: nodejs12.x
+  lambdaHashingVersion: 20201221
+
+  # you can overwrite defaults here
+  stage: ${opt:stage, 'dev'}
+  region: us-east-1
+  environment:
+    IS_ONLINE: true
+    SERVICE: ${self:service}
+    STAGE: ${self:provider.stage}
+    REGION: "local" # ${self:provider.region}
+    USER_TABLE: ${self:service}-${self:provider.stage}-User
+    ARTWORK_TABLE: ${self:service}-${self:provider.stage}-ArtWork
+    TRANSACTION_TABLE: ${self:service}-${self:provider.stage}-Transaction
+    ACCESS_KEY_ID: "S3RVER"
+    SECRET_ACCESS_KEY: "S3RVER"
+    BUCKET_NAME: "local_bucket"
+    ARTWORK_FOLDER: "artworks"
+    LEGAL_DOC_FOLDER: "legal_docs"
+    GRAPH_URL: "https://api.thegraph.com/subgraphs/name/prakhar7999/artwork"
+  iam:
+    role:
+      statements:
+        - Effect: "Allow"
+          Action:
+            - "s3:*"
+          Resource:
+            - "arn:aws:s3:::${self:provider.environment.BUCKET_NAME}/*"
+        - Effect: Allow
+          Action:
+            - dynamodb:DescribeTable
+            - dynamodb:Query
+            - dynamodb:Scan
+            - dynamodb:GetItem
+            - dynamodb:PutItem
+            - dynamodb:UpdateItem
+            - dynamodb:DeleteItem
+          Resource: arn:aws:dynamodb:${self:provider.region}:*:*
+
+functions:
+  index:
+    handler: src/index.handler
+    events:
+      - http:
+          cors: true
+          path: "{proxy+}"
+          method: any
+custom:
+  dynamodb:
+    stages:
+      - ${self:provider.stage}
+    start:
+      port: 8000
+      inMemory: true
+      migrate: true
+  s3:
+    host: localhost
+    directory: /tmp
+  apigwBinary:
+    types:
+      - "*/*"
+
+plugins:
+  - serverless-plugin-typescript
+  - serverless-dynamodb-local
+  - serverless-s3-local
+  - serverless-apigw-binary
+  - serverless-offline
+resources:
+  - ${file(resources/dynamodb/UserTable.yml)}
+  - ${file(resources/dynamodb/ArtWorkTable.yml)}
+  - ${file(resources/dynamodb/TransactionTable.yml)}
+  - ${file(resources/s3bucket.yml)}

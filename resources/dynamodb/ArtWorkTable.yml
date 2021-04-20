@@ -1,0 +1,15 @@
+Resources:
+  ArtWorkDynamoDBTable:
+    Type: "AWS::DynamoDB::Table"
+    DeletionPolicy: Delete
+    Properties:
+      TableName: "${self:service}-${self:provider.stage}-ArtWork"
+      ProvisionedThroughput:
+        ReadCapacityUnits: 5
+        WriteCapacityUnits: 5
+      AttributeDefinitions:
+        - AttributeName: id
+          AttributeType: S
+      KeySchema:
+        - AttributeName: id
+          KeyType: HASH
